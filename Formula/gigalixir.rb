@@ -2,45 +2,40 @@ class Gigalixir < Formula
   include Language::Python::Virtualenv
   desc "Gigalixir CLI"
   homepage "https://www.gigalixir.com"
-  url "https://github.com/gigalixir/gigalixir-cli/archive/v1.2.4.tar.gz"
-  sha256 "77bfee69bf3b2fa2809bfb3c1b510f5f596675784fe41485307c9fc13f665943"
+  url "https://github.com/gigalixir/gigalixir-cli/archive/v1.9.1.tar.gz"
+  sha256 "2dcf5c1a7c06ab1d7ee2335bf832f2ad6d9dae0e014e9ad7b635fe2fe56fe476"
 
   depends_on "python"
-
-  # needed for cryptography
-  depends_on "rust"
-
-  # see NOTES.md for how to generate these resources
-  # do *not* include gigalixir in this list!
+  depends_on "rust" # needed for cryptography
 
   resource "certifi" do
-    url "https://files.pythonhosted.org/packages/6c/ae/d26450834f0acc9e3d1f74508da6df1551ceab6c2ce0766a593362d6d57f/certifi-2021.10.8.tar.gz"
-    sha256 "78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872"
+    url "https://files.pythonhosted.org/packages/d4/91/c89518dd4fe1f3a4e3f6ab7ff23cb00ef2e8c9adf99dacc618ad5e068e28/certifi-2023.11.17.tar.gz"
+    sha256 "9b469f3a900bf28dc19b8cfbf8019bf47f7fdd1a65a1d4ffb98fc14166beb4d1"
   end
 
   resource "cffi" do
-    url "https://files.pythonhosted.org/packages/00/9e/92de7e1217ccc3d5f352ba21e52398372525765b2e0c4530e6eb2ba9282a/cffi-1.15.0.tar.gz"
-    sha256 "920f0d66a896c2d99f0adbb391f990a84091179542c205fa53ce5787aff87954"
+    url "https://files.pythonhosted.org/packages/68/ce/95b0bae7968c65473e1298efb042e10cafc7bafc14d9e4f154008241c91d/cffi-1.16.0.tar.gz"
+    sha256 "bcb3ef43e58665bbda2fb198698fcae6776483e0c4a631aa5647806c25e02cc0"
   end
 
   resource "charset-normalizer" do
-    url "https://files.pythonhosted.org/packages/9f/c5/334c019f92c26e59637bb42bd14a190428874b2b2de75a355da394cf16c1/charset-normalizer-2.0.7.tar.gz"
-    sha256 "e019de665e2bcf9c2b64e2e5aa025fa991da8720daa3c1138cadd2fd1856aed0"
+    url "https://files.pythonhosted.org/packages/63/09/c1bc53dab74b1816a00d8d030de5bf98f724c52c1635e07681d312f20be8/charset-normalizer-3.3.2.tar.gz"
+    sha256 "f30c3cb33b24454a82faecaf01b19c18562b1e89558fb6c56de4d9118a032fd5"
   end
 
   resource "click" do
-    url "https://files.pythonhosted.org/packages/f4/09/ad003f1e3428017d1c3da4ccc9547591703ffea548626f47ec74509c5824/click-8.0.3.tar.gz"
-    sha256 "410e932b050f5eed773c4cda94de75971c89cdb3155a72a0831139a79e5ecb5b"
+    url "https://files.pythonhosted.org/packages/96/d3/f04c7bfcf5c1862a2a5b845c6b2b360488cf47af55dfa79c98f6a6bf98b5/click-8.1.7.tar.gz"
+    sha256 "ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de"
   end
 
   resource "cryptography" do
-    url "https://files.pythonhosted.org/packages/cc/98/8a258ab4787e6f835d350639792527d2eb7946ff9fc0caca9c3f4cf5dcfe/cryptography-3.4.8.tar.gz"
-    sha256 "94cc5ed4ceaefcbe5bf38c8fba6a21fc1d365bb8fb826ea1688e3370b2e24a1c"
+    url "https://files.pythonhosted.org/packages/ce/b3/13a12ea7edb068de0f62bac88a8ffd92cc2901881b391839851846b84a81/cryptography-41.0.7.tar.gz"
+    sha256 "13f93ce9bea8016c253b34afc6bd6a75993e5c40672ed5405a9c832f0d4a00bc"
   end
 
   resource "idna" do
-    url "https://files.pythonhosted.org/packages/62/08/e3fc7c8161090f742f504f40b1bccbfc544d4a4e09eb774bf40aafce5436/idna-3.3.tar.gz"
-    sha256 "9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"
+    url "https://files.pythonhosted.org/packages/bf/3f/ea4b9117521a1e9c50344b909be7886dd00a519552724809bb1f486986c2/idna-3.6.tar.gz"
+    sha256 "9ecdbbd083b06798ae1e86adcbfe8ab1479cf864e4ee30fe4e46a003d12491ca"
   end
 
   resource "pycparser" do
@@ -49,28 +44,33 @@ class Gigalixir < Formula
   end
 
   resource "Pygments" do
-    url "https://files.pythonhosted.org/packages/b7/b3/5cba26637fe43500d4568d0ee7b7362de1fb29c0e158d50b4b69e9a40422/Pygments-2.10.0.tar.gz"
-    sha256 "f398865f7eb6874156579fdf36bc840a03cab64d1cde9e93d68f46a425ec52c6"
+    url "https://files.pythonhosted.org/packages/55/59/8bccf4157baf25e4aa5a0bb7fa3ba8600907de105ebc22b0c78cfbf6f565/pygments-2.17.2.tar.gz"
+    sha256 "da46cec9fd2de5be3a8a784f434e4c4ab670b4ff54d605c4c2717e9d49c4c367"
   end
 
   resource "pyOpenSSL" do
-    url "https://files.pythonhosted.org/packages/54/9a/2a43c5dbf4507f86f7c43cba4195d5e25a81c988fd7b0ea779dfc9c6973f/pyOpenSSL-21.0.0.tar.gz"
-    sha256 "5e2d8c5e46d0d865ae933bef5230090bdaf5506281e9eec60fa250ee80600cb3"
+    url "https://files.pythonhosted.org/packages/bf/a0/e667c3c43b65a188cc3041fa00c50655315b93be45182b2c94d185a2610e/pyOpenSSL-23.3.0.tar.gz"
+    sha256 "6b2cba5cc46e822750ec3e5a81ee12819850b11303630d575e98108a079c2b12"
+  end
+
+  resource "pypng" do
+    url "https://files.pythonhosted.org/packages/93/cd/112f092ec27cca83e0516de0a3368dbd9128c187fb6b52aaaa7cde39c96d/pypng-0.20220715.0.tar.gz"
+    sha256 "739c433ba96f078315de54c0db975aee537cbc3e1d0ae4ed9aab0ca1e427e2c1"
   end
 
   resource "qrcode" do
-    url "https://files.pythonhosted.org/packages/94/9f/31f33cdf3cf8f98e64c42582fb82f39ca718264df61957f28b0bbb09b134/qrcode-7.3.1.tar.gz"
-    sha256 "375a6ff240ca9bd41adc070428b5dfc1dcfbb0f2507f1ac848f6cded38956578"
+    url "https://files.pythonhosted.org/packages/30/35/ad6d4c5a547fe9a5baf85a9edbafff93fc6394b014fab30595877305fa59/qrcode-7.4.2.tar.gz"
+    sha256 "9dd969454827e127dbd93696b20747239e6d540e082937c90f14ac95b30f5845"
   end
 
   resource "requests" do
-    url "https://files.pythonhosted.org/packages/e7/01/3569e0b535fb2e4a6c384bdbed00c55b9d78b5084e0fb7f4d0bf523d7670/requests-2.26.0.tar.gz"
-    sha256 "b8aa58f8cf793ffd8782d3d8cb19e66ef36f7aba4353eec859e74678b01b07a7"
+    url "https://files.pythonhosted.org/packages/9d/be/10918a2eac4ae9f02f6cfe6414b7a155ccd8f7f9d4380d62fd5b955065c3/requests-2.31.0.tar.gz"
+    sha256 "942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1"
   end
 
   resource "rollbar" do
-    url "https://files.pythonhosted.org/packages/8c/8a/5d3ab1408094b12ab931c4d597aa1a514e7e7078caafcdda688f8b492cb6/rollbar-0.16.2.tar.gz"
-    sha256 "aa3b570062dd8dfb0e11537ba858f9e1633a604680e062a525434b8245540f87"
+    url "https://files.pythonhosted.org/packages/a7/63/ff156ee27ea24a18f78eac7288b16f88d999c919b3767f4ebb1bd06f5ad9/rollbar-1.0.0.tar.gz"
+    sha256 "6347b7e49f22f0296fc287a6aea75d642cf64494d2ee127042a7a593c97df3af"
   end
 
   resource "six" do
@@ -79,20 +79,26 @@ class Gigalixir < Formula
   end
 
   resource "stripe" do
-    url "https://files.pythonhosted.org/packages/81/61/c3f979738c2b3f83b6fca0fd70cc0275c8cf7feba5cefae28cc1df06afa9/stripe-2.62.0.tar.gz"
-    sha256 "1fb51d67a961ea889c5be324f020535ed511c6f483bd13a07f48f6e369fa8df0"
+    url "https://files.pythonhosted.org/packages/4e/d6/c70e870daa63c05ba739a68a2f89b5b3c560305b19e503fd51650dd81936/stripe-7.6.0.tar.gz"
+    sha256 "69e6b80f76f9587c8326e43232d2e9f24d2129a61b995d5a14deb3813048896a"
+  end
+
+  resource "typing-extensions" do
+    url "https://files.pythonhosted.org/packages/1f/7a/8b94bb016069caa12fc9f587b28080ac33b4fbb8ca369b98bc0a4828543e/typing_extensions-4.8.0.tar.gz"
+    sha256 "df8e4339e9cb77357558cbdbceca33c303714cf861d1eef15e1070055ae8b7ef"
   end
 
   resource "urllib3" do
-    url "https://files.pythonhosted.org/packages/80/be/3ee43b6c5757cabea19e75b8f46eaf05a2f5144107d7db48c7cf3a864f73/urllib3-1.26.7.tar.gz"
-    sha256 "4987c65554f7a2dbf30c18fd48778ef124af6fab771a377103da0585e2336ece"
+    url "https://files.pythonhosted.org/packages/36/dd/a6b232f449e1bc71802a5b7950dc3675d32c6dbc2a1bd6d71f065551adb6/urllib3-2.1.0.tar.gz"
+    sha256 "df7aa8afb0148fa78488e7899b2c59b5f4ffcfa82e6c54ccb9dd37c1d7b52d54"
+  end
+
+
+  test do
+    system bin/"gigalixir", "version"
   end
 
   def install
     virtualenv_install_with_resources
-  end
-
-  test do
-    system bin/"gigalixir", "version"
   end
 end
