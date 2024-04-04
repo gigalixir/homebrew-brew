@@ -2,15 +2,15 @@ class Gigalixir < Formula
   include Language::Python::Virtualenv
   desc "Gigalixir CLI"
   homepage "https://www.gigalixir.com"
-  url "https://github.com/gigalixir/gigalixir-cli/archive/v1.11.1.tar.gz"
-  sha256 "1c07e3673351a1d56b9b0fdefef449e2674794996ab54a54f97f6d7d6bccb09c"
+  url "https://github.com/gigalixir/gigalixir-cli/archive/v1.11.2.tar.gz"
+  sha256 "84d9e10b3bb278e43e68c7f14c849d91f335d8fa7ac4354176dc04ad4d37ff26"
 
   depends_on "python"
   depends_on "rust" # needed for cryptography
 
   resource "certifi" do
-    url "https://files.pythonhosted.org/packages/40/a7/ded59fa294b85ca206082306bba75469a38ea1c7d44ea7e1d64f5443d67a/certifi-2020.6.20.tar.gz"
-    sha256 "5930595817496dd21bb8dc35dad090f1c2cd0adfaf21204bf6732ca5d8ee34d3"
+    url "https://files.pythonhosted.org/packages/71/da/e94e26401b62acd6d91df2b52954aceb7f561743aa5ccc32152886c76c96/certifi-2024.2.2.tar.gz"
+    sha256 "0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f"
   end
 
   resource "cffi" do
