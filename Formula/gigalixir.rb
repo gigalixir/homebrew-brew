@@ -2,8 +2,8 @@ class Gigalixir < Formula
   include Language::Python::Virtualenv
   desc "Gigalixir CLI"
   homepage "https://www.gigalixir.com"
-  url "https://github.com/gigalixir/gigalixir-cli/archive/v1.11.2.tar.gz"
-  sha256 "84d9e10b3bb278e43e68c7f14c849d91f335d8fa7ac4354176dc04ad4d37ff26"
+  url "https://github.com/gigalixir/gigalixir-cli/archive/v1.12.0.tar.gz"
+  sha256 "0da15a52e959b295c14c89a497e56dc652646dfcf63f3f5845162f67470f97f5"
 
   depends_on "python"
   depends_on "rust" # needed for cryptography
