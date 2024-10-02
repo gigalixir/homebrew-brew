@@ -2,8 +2,8 @@ class Gigalixir < Formula
   include Language::Python::Virtualenv
   desc "Gigalixir CLI"
   homepage "https://www.gigalixir.com"
-  url "https://github.com/gigalixir/gigalixir-cli/archive/v1.13.0.tar.gz"
-  sha256 "d03090a978d888b384567f4e5c504950742ec839427a99d30f39cf668c386ec0"
+  url "https://github.com/gigalixir/gigalixir-cli/archive/v1.13.1.tar.gz"
+  sha256 "1092b6f97f06d51ae6ce9113495b0ab444f833808a9be317c787b03518a50da9"
 
   depends_on "python"
   depends_on "rust" # needed for cryptography
@@ -36,6 +36,11 @@ class Gigalixir < Formula
   resource "idna" do
     url "https://files.pythonhosted.org/packages/ea/b7/e0e3c1c467636186c39925827be42f16fee389dc404ac29e930e9136be70/idna-2.10.tar.gz"
     sha256 "b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6"
+  end
+
+  resource "importlib-metadata" do
+    url "https://files.pythonhosted.org/packages/cd/12/33e59336dca5be0c398a7482335911a33aa0e20776128f038019f1a95f1b/importlib_metadata-8.5.0.tar.gz"
+    sha256 "71522656f0abace1d072b9e5481a48f07c138e00f079c38c8f883823f9c26bd7"
   end
 
   resource "pycparser" do
@@ -91,6 +96,11 @@ class Gigalixir < Formula
   resource "urllib3" do
     url "https://files.pythonhosted.org/packages/0c/39/64487bf07df2ed854cc06078c27c0d0abc59bd27b32232876e403c333a08/urllib3-1.26.18.tar.gz"
     sha256 "f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0"
+  end
+
+  resource "zipp" do
+    url "https://files.pythonhosted.org/packages/54/bf/5c0000c44ebc80123ecbdddba1f5dcd94a5ada602a9c225d84b5aaa55e86/zipp-3.20.2.tar.gz"
+    sha256 "bc9eb26f4506fda01b81bcde0ca78103b6e62f991b381fec825435c836edbc29"
   end
 
 
