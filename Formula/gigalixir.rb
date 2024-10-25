@@ -29,8 +29,8 @@ class Gigalixir < Formula
   end
 
   resource "cryptography" do
-    url "https://files.pythonhosted.org/packages/de/ba/0664727028b37e249e73879348cc46d45c5c1a2a2e81e8166462953c5755/cryptography-43.0.1.tar.gz"
-    sha256 "203e92a75716d8cfb491dc47c79e17d0d9207ccffcbcb35f598fbe463ae3444d"
+    url "https://files.pythonhosted.org/packages/0d/05/07b55d1fa21ac18c3a8c79f764e2514e6f6a9698f1be44994f5adf0d29db/cryptography-43.0.3.tar.gz"
+    sha256 "315b9001266a492a6ff443b61238f956b214dbec9910a081ba5b6646a055a805"
   end
 
   resource "idna" do
@@ -79,8 +79,8 @@ class Gigalixir < Formula
   end
 
   resource "stripe" do
-    url "https://files.pythonhosted.org/packages/97/e1/d867a08081f1627d13310cb55ec27b7c687d731ee0c3c8928a57e0d65739/stripe-11.1.0.tar.gz"
-    sha256 "1fac660dcc3014268cafc94a45ebeac66f1a752365f60019d2263e0c1e0f965b"
+    url "https://files.pythonhosted.org/packages/3f/82/0732dd3c352c047cdde76aed389c0b7386faa6ffad2b2d952729b593a6c2/stripe-11.1.1.tar.gz"
+    sha256 "0bbdfe54a09728fc54db6bb099b2f440ffc111d07d9674b0f04bfd0d3c1cbdcf"
   end
 
   resource "typing-extensions" do
