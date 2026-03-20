@@ -7,13 +7,14 @@ task :default do
   venv_dir = File.join(Dir.pwd,"venv.#{$now}")
 
   # create virtualenv
-  sh "virtualenv #{venv_dir}"
+  sh "python3 -m venv #{venv_dir}"
 
   # set the path to use virtualenv
   path_was = ENV['PATH']
   ENV['PATH'] = "#{venv_dir}/bin:#{ENV['PATH']}"
 
   # install gigalixir-cli and poet
+  sh "pip install --upgrade pip 'setuptools<70.0'"
   sh "pip install gigalixir homebrew-pypi-poet"
 
   # gather version of gigalixir-cli

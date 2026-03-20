@@ -6,7 +6,8 @@ RUN apt update \
  && apt -y dist-upgrade \
  && apt install -y \
    rake \
-   virtualenv \
+   python3-venv \
+   python3-pip \
    wget \
  && rm -rf /var/lib/apt/lists/*
 
