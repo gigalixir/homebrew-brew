@@ -2,8 +2,8 @@ class Gigalixir < Formula
   include Language::Python::Virtualenv
   desc "Gigalixir CLI"
   homepage "https://www.gigalixir.com"
-  url "https://github.com/gigalixir/gigalixir-cli/archive/v1.16.0.tar.gz"
-  sha256 "3b5acbe4927d072b05efe5687ef38b7ab188755079a40974f7a749bb77166358"
+  url "https://github.com/gigalixir/gigalixir-cli/archive/v1.16.1.tar.gz"
+  sha256 "8c2062727397bb782b97f4f89cad59db93dd8ffeccc1bf5eef72e07ffa0d0c1e"
 
   depends_on "python"
   depends_on "rust" # needed for cryptography
@@ -39,8 +39,8 @@ class Gigalixir < Formula
   end
 
   resource "importlib-metadata" do
-    url "https://files.pythonhosted.org/packages/51/ef/7bfc44cdb07664906ce20888ca3ce231c1f98b7c9042b116c43107748617/importlib_metadata-8.8.0.tar.gz"
-    sha256 "d4ae075d546a9c2db36f0ba957f15f9443c9604e57d0785701621cb7ea2ec5d7"
+    url "https://files.pythonhosted.org/packages/a9/01/15bb152d77b21318514a96f43af312635eb2500c96b55398d020c93d86ea/importlib_metadata-9.0.0.tar.gz"
+    sha256 "a4f57ab599e6a2e3016d7595cfd72eb4661a5106e787a95bcc90c7105b831efc"
   end
 
   resource "pycparser" do
