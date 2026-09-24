@@ -1,0 +1,30 @@
+name: Update formula
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Render Formula/gigalixir.rb
+        id: render
+        run: scripts/render-formula.sh
+
+      - name: Commit if it changed
+        env:
+          VERSION: ${{ steps.render.outputs.version }}
+        run: |
+          if git diff --quiet -- Formula/gigalixir.rb; then
+            echo "Formula/gigalixir.rb already matches v${VERSION}"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/gigalixir.rb
+          git commit -m "chore: update gigalixir formula to v${VERSION}"
+          git push
