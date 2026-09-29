@@ -16,11 +16,13 @@ jobs:
         run: scripts/render-formula.sh
 
       - name: Commit if it changed
+        id: commit
         env:
           VERSION: ${{ steps.render.outputs.version }}
         run: |
           if git diff --quiet -- Formula/gigalixir.rb; then
             echo "Formula/gigalixir.rb already matches v${VERSION}"
+            echo "committed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
@@ -28,3 +30,24 @@ jobs:
           git add Formula/gigalixir.rb
           git commit -m "chore: update gigalixir formula to v${VERSION}"
           git push
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      # These releases exist to be watched and compared, not installed --
+      # Homebrew reads the formula from the default branch and never sees
+      # them. Tagged with a `+` (semver build metadata, ignored in
+      # precedence) rather than a `-` (a pre-release, which sorts below
+      # the plain version): a `-` here would make every comparison against
+      # cli/VERSION report this tap as permanently behind.
+      - name: Cut a release
+        if: steps.commit.outputs.committed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.render.outputs.version }}
+        run: |
+          full_sha="$(git rev-parse HEAD)"
+          short_sha="$(git rev-parse --short HEAD)"
+          tag="${VERSION}+${short_sha}"
+          gh release create "$tag" \
+            --target "$full_sha" \
+            --title "$tag" \
+            --notes "Renders v${VERSION} (${short_sha})."
