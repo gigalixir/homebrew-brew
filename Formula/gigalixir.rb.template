@@ -4,27 +4,27 @@
 class Gigalixir < Formula
   desc "Gigalixir CLI"
   homepage "https://www.gigalixir.com"
-  version "1.35.0"
+  version "@@VERSION@@"
 
   on_macos do
     on_arm do
-      url "https://get.gigalixir.com/cli/v1.35.0/gigalixir-darwin-arm64"
-      sha256 "b8ac8889ffb6a061f9aa8cae32b1d13a65f17d3937f58e18d9dac7e839f31587"
+      url "https://get.gigalixir.com/cli/v@@VERSION@@/gigalixir-darwin-arm64"
+      sha256 "@@SHA_DARWIN_ARM64@@"
     end
     on_intel do
-      url "https://get.gigalixir.com/cli/v1.35.0/gigalixir-darwin-amd64"
-      sha256 "982b4c545288f2fd6a5ce564063429e67f82850e4585bdf5aacc01cface77da9"
+      url "https://get.gigalixir.com/cli/v@@VERSION@@/gigalixir-darwin-amd64"
+      sha256 "@@SHA_DARWIN_AMD64@@"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://get.gigalixir.com/cli/v1.35.0/gigalixir-linux-arm64"
-      sha256 "7a8e5a21e6c02fd212c0870f702cf685a5c8f818f78e6b90edbd416fa011a7d1"
+      url "https://get.gigalixir.com/cli/v@@VERSION@@/gigalixir-linux-arm64"
+      sha256 "@@SHA_LINUX_ARM64@@"
     end
     on_intel do
-      url "https://get.gigalixir.com/cli/v1.35.0/gigalixir-linux-amd64"
-      sha256 "7e9112917032ab0fc0a558837483e5ce84381a199a8a7ee727d6ef8c7f0e65d4"
+      url "https://get.gigalixir.com/cli/v@@VERSION@@/gigalixir-linux-amd64"
+      sha256 "@@SHA_LINUX_AMD64@@"
     end
   end
 
