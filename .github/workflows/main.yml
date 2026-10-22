@@ -1,8 +1,9 @@
 name: brew install
 on:
   push:
-    branches: main
-  pull_request: []
+    branches:
+      - main
+  pull_request:
 
 permissions:
   contents: read
@@ -15,8 +16,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run brew update
         run: brew update
+      - name: Tap the checked-out formula
+        run: brew tap gigalixir/brew "$GITHUB_WORKSPACE"
       - name: Run brew install
-        run: brew tap gigalixir/brew && brew install gigalixir
+        run: brew install gigalixir/brew/gigalixir
       - name: Check gigalixir
         run: |
           gigalixir version
