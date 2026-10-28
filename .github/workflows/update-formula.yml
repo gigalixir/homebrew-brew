@@ -203,3 +203,70 @@ jobs:
             --target "$target" \
             --title "$tag" \
             --notes "Renders v${VERSION} (${target:0:7})."
+
+      # GitHub holds the pull_request run of main.yml on a PR opened with
+      # GITHUB_TOKEN until someone approves it, so it never starts a job; when
+      # the PR merges and its branch is deleted GitHub ends it as `failure`
+      # seconds later. The dispatched install test is what gated the merge, so
+      # the held run is noise and would leave a red run behind every release.
+      #
+      # Only a run of main.yml, on the pull_request event, at the exact commit
+      # that was tested, with no jobs, is deleted. The API refuses to delete a
+      # run that has not completed, and GitHub completes this one itself within
+      # seconds of the merge, so a short bounded poll waits for that. Cancelling
+      # first would only race the same conclusion: cancelling a run that has
+      # just completed is an error, and the poll is needed for the delete anyway.
+      #
+      # Runs after the release even when the release failed, because a re-run
+      # sees no change and would never come back for this run. It is cosmetic,
+      # so it never fails the job: every problem is a warning, and the run stays.
+      - name: Delete the held pull_request run
+        if: ${{ !cancelled() && steps.merge.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          set -uo pipefail
+
+          job_count() { # run id
+            gh api "repos/${GITHUB_REPOSITORY}/actions/runs/$1/jobs?filter=all&per_page=1" --jq '.total_count'
+          }
+
+          ids="$(gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/main.yml/runs?event=pull_request&head_sha=${HEAD_SHA}&per_page=100" \
+            --jq '.workflow_runs[] | select(.event == "pull_request" and .head_sha == env.HEAD_SHA) | .id')" || {
+            echo "::warning::could not list the pull_request runs on ${HEAD_SHA}; leaving them"
+            exit 0
+          }
+
+          while read -r id; do
+            [[ -n "$id" ]] || continue
+            jobs="$(job_count "$id")" || { echo "::warning::could not read the jobs of run ${id}; leaving it"; continue; }
+            if [[ "$jobs" != "0" ]]; then
+              echo "Run ${id} ran ${jobs} job(s); leaving it"
+              continue
+            fi
+
+            # 60 seconds of 5-second polls for GitHub to conclude the run.
+            status=""
+            for _ in $(seq 12); do
+              status="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}" --jq '.status')" || status=""
+              [[ "$status" == "completed" ]] && break
+              sleep 5
+            done
+            if [[ "$status" != "completed" ]]; then
+              echo "::warning::run ${id} had not completed after 60 seconds; leaving it"
+              continue
+            fi
+
+            # Recheck: a run that gained a job while it settled is not the held one.
+            jobs="$(job_count "$id")" || { echo "::warning::could not read the jobs of run ${id}; leaving it"; continue; }
+            [[ "$jobs" == "0" ]] || { echo "Run ${id} ran ${jobs} job(s); leaving it"; continue; }
+
+            if gh api -X DELETE "repos/${GITHUB_REPOSITORY}/actions/runs/${id}"; then
+              echo "Deleted held run ${id}"
+            else
+              echo "::warning::could not delete run ${id}; it stays in the Actions list"
+            fi
+          done <<<"$ids"
+          exit 0
