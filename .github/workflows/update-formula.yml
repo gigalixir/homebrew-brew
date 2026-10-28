@@ -2,12 +2,35 @@ name: Update formula
 on:
   workflow_dispatch: {}
 
+# The render lands on main through a pull request, and only after the
+# install test passes on it, so a broken formula never reaches main.
+#
+# This workflow pushes with GITHUB_TOKEN, and events caused by that token do
+# not start new runs (workflow_dispatch is the exception), so it runs the
+# install test itself: it dispatches main.yml on the bot branch and waits.
+# A workflow_dispatch check cannot satisfy a required status check, so the
+# result is reported as a commit status under the same name (test-bot) that
+# main.yml's pull_request run reports, and one required check covers both.
 permissions:
-  contents: write
+  actions: write # dispatch main.yml and read its run
+  contents: write # push the bot branch, merge the PR, cut the release
+  pull-requests: write # open and update the PR
+  statuses: write # report the install test on the branch head
+
+# Two dispatches in a row queue rather than race over the one bot branch.
+# The queued run renders after the first has merged, so it sees no change.
+concurrency:
+  group: update-formula
+  cancel-in-progress: false
+
+env:
+  BRANCH: update-formula
+  CHECK_NAME: test-bot
 
 jobs:
   render:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -15,16 +38,157 @@ jobs:
         id: render
         run: scripts/render-formula.sh
 
-      - name: Commit if it changed
+      - name: Commit to the bot branch
+        id: commit
         env:
           VERSION: ${{ steps.render.outputs.version }}
         run: |
+          set -euo pipefail
           if git diff --quiet -- Formula/gigalixir.rb; then
             echo "Formula/gigalixir.rb already matches v${VERSION}"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
           git add Formula/gigalixir.rb
           git commit -m "chore: update gigalixir formula to v${VERSION}"
-          git push
+          # The branch is the bot's alone; a failed earlier run may have left it behind.
+          git push --force origin "$BRANCH"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Open the pull request
+        id: pr
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.render.outputs.version }}
+        run: |
+          set -euo pipefail
+          title="chore: update gigalixir formula to v${VERSION}"
+          body="Renders Formula/gigalixir.rb for v${VERSION}. Merged automatically once the install test passes."
+          # A failed earlier run leaves its PR open; reuse it so there is only ever one.
+          number="$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')"
+          if [[ -n "$number" ]]; then
+            gh pr edit "$number" --title "$title" --body "$body"
+          else
+            url="$(gh pr create --head "$BRANCH" --base main --title "$title" --body "$body")"
+            number="${url##*/}"
+          fi
+          echo "number=${number}" >> "$GITHUB_OUTPUT"
+
+      - name: Run the install test on the bot branch
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          set -euo pipefail
+
+          post_status() { # state, description, target url
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
+              -f state="$1" -f context="$CHECK_NAME" -f description="$2" -f target_url="$3" >/dev/null
+          }
+
+          post_status pending "Install test queued" "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          run_id="$(gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/workflows/main.yml/dispatches" \
+            -f ref="$BRANCH" -F return_run_details=true --jq '.workflow_run_id')"
+          [[ -n "$run_id" ]] || { echo "::error::the dispatch returned no run id"; exit 1; }
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${run_id}"
+          echo "Install test: ${run_url}"
+
+          # 45 minutes of 15-second polls; the job's own timeout is longer.
+          for _ in $(seq 180); do
+            run="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" \
+              --jq '[.status, (.conclusion // "none"), .head_sha] | @tsv')"
+            IFS=$'\t' read -r status conclusion run_sha <<<"$run"
+            if [[ "$run_sha" != "$HEAD_SHA" ]]; then
+              post_status error "Install test ran on a different commit" "$run_url"
+              echo "::error::the run tested ${run_sha}, not ${HEAD_SHA}"
+              exit 1
+            fi
+            if [[ "$status" == "completed" ]]; then
+              if [[ "$conclusion" == "success" ]]; then
+                post_status success "Install test passed" "$run_url"
+                exit 0
+              fi
+              post_status failure "Install test ${conclusion}" "$run_url"
+              echo "::error::the install test finished ${conclusion}; the pull request stays open"
+              exit 1
+            fi
+            sleep 15
+          done
+          post_status error "Install test did not finish in time" "$run_url"
+          echo "::error::the install test did not finish within 45 minutes"
+          exit 1
+
+      - name: Merge the pull request
+        id: merge
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ steps.commit.outputs.sha }}
+          PR: ${{ steps.pr.outputs.number }}
+        run: |
+          set -euo pipefail
+          # --match-head-commit refuses to merge anything but the tested commit.
+          # GitHub can take a few seconds to see the status it was just sent.
+          merged=false
+          for _ in $(seq 6); do
+            if gh pr merge "$PR" --squash --match-head-commit "$HEAD_SHA"; then
+              merged=true
+              break
+            fi
+            sleep 10
+          done
+          [[ "$merged" == "true" ]] || { echo "::error::could not merge #${PR}"; exit 1; }
+
+          merge_sha=""
+          for _ in $(seq 6); do
+            merge_sha="$(gh pr view "$PR" --json mergeCommit --jq '.mergeCommit.oid // empty')"
+            [[ -n "$merge_sha" ]] && break
+            sleep 5
+          done
+          [[ -n "$merge_sha" ]] || { echo "::error::#${PR} merged but its merge commit is unknown"; exit 1; }
+          echo "sha=${merge_sha}" >> "$GITHUB_OUTPUT"
+
+          git push origin --delete "$BRANCH" || echo "::warning::could not delete ${BRANCH}; the next run force-pushes over it"
+
+      # These releases exist to be watched and compared, not installed --
+      # Homebrew reads the formula from the default branch and never sees
+      # them. Tagged with a `+` (semver build metadata, ignored in
+      # precedence) rather than a `-` (a pre-release, which sorts below
+      # the plain version): a `-` here would make every comparison against
+      # cli/VERSION report this tap as permanently behind.
+      #
+      # Cut at the merge commit on main. When nothing changed, main already
+      # has this version's formula, so cut only if no release names it yet:
+      # that recovers a run that merged but failed before releasing, which
+      # re-running would otherwise never repair.
+      - name: Cut a release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.render.outputs.version }}
+          CHANGED: ${{ steps.commit.outputs.changed }}
+          MERGE_SHA: ${{ steps.merge.outputs.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$CHANGED" == "true" ]]; then
+            target="$MERGE_SHA"
+          else
+            existing="$(gh release list --limit 200 --json tagName \
+              --jq ".[] | select(.tagName | startswith(\"${VERSION}+\")) | .tagName")"
+            if [[ -n "$existing" ]]; then
+              echo "Release ${existing} already covers v${VERSION}"
+              exit 0
+            fi
+            target="$(git rev-parse HEAD)"
+          fi
+          tag="${VERSION}+${target:0:7}"
+          gh release create "$tag" \
+            --target "$target" \
+            --title "$tag" \
+            --notes "Renders v${VERSION} (${target:0:7})."
