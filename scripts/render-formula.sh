@@ -8,10 +8,29 @@
 # Run by .github/workflows/update-formula.yml on workflow_dispatch; safe to
 # run locally too (it only reads the network and writes
 # Formula/gigalixir.rb -- it does not commit).
+#
+# TARGET_VERSION (required, bare X.Y.Z): the version to render. The script
+# waits for cli/VERSION to serve exactly that version and renders it, and
+# never renders any other. There is no "render whatever is served" mode: a
+# read of cli/VERSION can be stale, and nothing on this side can tell, so
+# every caller names the version it wants.
 
 set -euo pipefail
 
 BASE_URL="${GIGALIXIR_DOWNLOADS_BASE:-https://get.gigalixir.com}"
+
+# The CDN in front of cli/VERSION keeps a copy for 60s per edge and may serve
+# one more stale copy while it revalidates; a quiet edge can serve that stale
+# copy long after the 60s, and a cache-busting query string or Cache-Control
+# request header does not get around it. So a read can return an old version,
+# which is why the version is always named and waited for, never taken from
+# whatever is served. 300s covers the usual revalidation with margin for a
+# slow edge, and still fails well inside the job's own timeout when the
+# version never arrives. The overrides exist so a test need not wait minutes.
+TARGET_VERSION="${TARGET_VERSION:-}"
+VERSION_WAIT_SECONDS="${VERSION_WAIT_SECONDS:-300}"
+VERSION_POLL_SECONDS="${VERSION_POLL_SECONDS:-10}"
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE="${ROOT_DIR}/Formula/gigalixir.rb.template"
 OUT="${ROOT_DIR}/Formula/gigalixir.rb"
@@ -39,9 +58,27 @@ is_known() {
     return 1
 }
 
-version="$(curl -fsSL "${BASE_URL}/cli/VERSION")"
-[[ -n "$version" ]] || err "VERSION came back empty"
-[[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || err "VERSION '${version}' is not X.Y.Z"
+[[ -n "$TARGET_VERSION" ]] || err "TARGET_VERSION is not set; name the version to render, as a bare X.Y.Z"
+[[ "$TARGET_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+    || err "version '${TARGET_VERSION}' is not a bare X.Y.Z (no leading v)"
+
+# The version is fixed before the loop and never reassigned from what is
+# served, so nothing the CDN returns can change which version is rendered.
+version="$TARGET_VERSION"
+deadline=$((SECONDS + VERSION_WAIT_SECONDS))
+last="nothing (no fetch has succeeded yet)"
+while :; do
+    if served="$(curl -fsSL --max-time 20 "${BASE_URL}/cli/VERSION")"; then
+        last="'${served:0:40}'"
+        [[ "$served" == "$version" ]] && break
+    else
+        last="a failed fetch"
+    fi
+    (( SECONDS < deadline )) \
+        || err "waited ${VERSION_WAIT_SECONDS}s for ${BASE_URL}/cli/VERSION to serve '${version}'; last saw ${last}"
+    log "cli/VERSION read gave ${last}; waiting for '${version}'"
+    sleep "$VERSION_POLL_SECONDS"
+done
 
 log "current version is ${version}"
 

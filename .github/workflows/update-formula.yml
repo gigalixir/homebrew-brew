@@ -1,6 +1,11 @@
 name: Update formula
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Bare X.Y.Z (no leading v). The render waits for cli/VERSION to serve it, then renders exactly it."
+        required: true
+        type: string
 
 # The render lands on main through a pull request, and only after the
 # install test passes on it, so a broken formula never reaches main.
@@ -34,8 +39,14 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # The version is always named and waited for, never read off whatever
+      # cli/VERSION serves: the CDN can serve a stale copy, even long after a
+      # promote. A missing or unserved version fails this step, before anything
+      # below touches a branch, PR, status or release.
       - name: Render Formula/gigalixir.rb
         id: render
+        env:
+          TARGET_VERSION: ${{ inputs.version }}
         run: scripts/render-formula.sh
 
       - name: Commit to the bot branch
